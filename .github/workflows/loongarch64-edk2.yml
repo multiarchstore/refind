@@ -41,7 +41,6 @@ jobs:
             dpkg-dev \
             fakeroot \
             gettext \
-            gnu-efi \
             iasl \
             mtools \
             nasm \
