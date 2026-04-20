@@ -5,6 +5,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-loongarch64-edk2:
     runs-on: ubuntu-latest
@@ -32,14 +35,9 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Verify simulated native loong64 container
-        uses: maus007/docker-run-action-fork@5ddaad0f7eedd03f64e412b1931852bd3031b273
-        with:
-          image: linuxdeepin/deepin:crimson-loong64
-          options: --cpus=2 --platform linux/loong64 --privileged -v ${{ github.workspace }}:/work
-          run: |
-            cd /work
-            uname -m
-            test -f Makefile
+        run: |
+          docker run --rm --platform linux/loong64 --privileged -v "$GITHUB_WORKSPACE:/work" linuxdeepin/deepin:crimson-loong64 \
+            sh -lc 'cd /work && uname -m && test -f Makefile'
 
       - name: Install build dependencies
         run: |

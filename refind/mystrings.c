@@ -350,12 +350,7 @@ BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List) {
                 Found[0] = L'\0';
             } // if/else
         } else { // Found is NOT final element
-            UINTN i = 0;
-            while (Comma[1 + i] != L'\0') {
-                Found[i] = Comma[1 + i];
-                i++;
-            }
-            Found[i] = L'\0';
+            StrCpyS(Found, StrLen(&Comma[1]) + 1, &Comma[1]);
         } // if/else
         return TRUE;
     } else {

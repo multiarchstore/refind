@@ -143,6 +143,7 @@ typedef struct EfiAppleSetOsInterface {
 EFI_STATUS SetAppleOSInfo() {
     CHAR16 *AppleOSVersion = NULL;
     CHAR8 *AppleOSVersion8 = NULL;
+    UINTN AppleOSVersion8Len = 0;
     EFI_STATUS Status;
     EFI_GUID apple_set_os_guid = EFI_APPLE_SET_OS_PROTOCOL_GUID;
     EfiAppleSetOsInterface *SetOs = NULL;
@@ -161,9 +162,10 @@ EFI_STATUS SetAppleOSInfo() {
         MergeStrings(&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
         if (AppleOSVersion) {
             LOG(2, LOG_LINE_NORMAL, L"Setting Apple OS information to '%s'", AppleOSVersion);
-            AppleOSVersion8 = AllocateZeroPool((StrLen(AppleOSVersion) + 1) * sizeof(CHAR8));
+            AppleOSVersion8Len = StrLen(AppleOSVersion) + 1;
+            AppleOSVersion8 = AllocateZeroPool(AppleOSVersion8Len * sizeof(CHAR8));
             if (AppleOSVersion8) {
-                UnicodeStrToAsciiStrS(AppleOSVersion, AppleOSVersion8, StrLen(AppleOSVersion) + 1);
+                UnicodeStrToAsciiStrS(AppleOSVersion, AppleOSVersion8, AppleOSVersion8Len);
                 Status = refit_call1_wrapper (SetOs->SetOsVersion, AppleOSVersion8);
                 if (!EFI_ERROR(Status))
                     Status = EFI_SUCCESS;
