@@ -144,20 +144,21 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
         Length2 = StrLen(Second);
     NewString = AllocatePool(sizeof(CHAR16) * (Length1 + Length2 + 2));
     if (NewString != NULL) {
+        UINTN NewStringSize = Length1 + Length2 + 2;
         if ((*First != NULL) && (Length1 == 0)) {
             MyFreePool(*First);
             *First = NULL;
         }
         NewString[0] = L'\0';
         if (*First != NULL) {
-            StrCat(NewString, *First);
+            StrCatS(NewString, NewStringSize, *First);
             if (AddChar) {
                 NewString[Length1] = AddChar;
                 NewString[Length1 + 1] = '\0';
             } // if (AddChar)
         } // if (*First != NULL)
         if (Second != NULL)
-            StrCat(NewString, Second);
+            StrCatS(NewString, NewStringSize, Second);
         MyFreePool(*First);
         *First = NewString;
     } else {
@@ -216,7 +217,7 @@ BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
         } else {
             TempString = StrDuplicate(&SubString[i]);
             if (TempString != NULL) {
-                StrCpy(&SubString[1], TempString);
+                StrCpyS(&SubString[1], StrLen(TempString) + 1, TempString);
                 MyFreePool(TempString);
                 HasChanged = TRUE;
             } else {
@@ -349,7 +350,12 @@ BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List) {
                 Found[0] = L'\0';
             } // if/else
         } else { // Found is NOT final element
-            StrCpy(Found, &Comma[1]);
+            UINTN i = 0;
+            while (Comma[1 + i] != L'\0') {
+                Found[i] = Comma[1 + i];
+                i++;
+            }
+            Found[i] = L'\0';
         } // if/else
         return TRUE;
     } else {
@@ -416,7 +422,7 @@ BOOLEAN ReplaceSubstring(IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN
                 FoundSearchString[-1] = L'\0';
                 ReplString = SearchString;
             } // if
-            StrCpy(NewString, *MainString);
+            StrCpyS(NewString, StrLen(*MainString) + 1, *MainString);
             MergeStrings(&NewString, ReplString, L'\0');
             MergeStrings(&NewString, EndString, L'\0');
             MyFreePool(MainString);

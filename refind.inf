@@ -32,7 +32,6 @@
   EfiLib/BdsConnect.c #included into GenericBdsLib
   EfiLib/BdsHelper.c
   EfiLib/BdsTianoCore.c
-  EfiLib/legacy.c
   gzip/decompress_inflate.c
   mok/mok.c
   mok/guid.c
@@ -66,6 +65,12 @@
   libeg/nanojpeg_xtra.c
   libeg/screen.c
   libeg/text.c
+
+[Sources.IA32]
+  EfiLib/legacy.c
+
+[Sources.X64]
+  EfiLib/legacy.c
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -128,7 +133,6 @@
   gEfiSimpleTextOutProtocolGuid                           # ALWAYS_CONSUMED
   gEfiUnicodeCollation2ProtocolGuid                       # ALWAYS_CONSUMED  
   
-  gEfiAcpiS3SaveProtocolGuid                    # PROTOCOL CONSUMES
   gEfiBlockIoProtocolGuid                       # PROTOCOL CONSUMES
   gEfiCpuArchProtocolGuid                       # PROTOCOL CONSUMES
   gEfiDebugPortProtocolGuid                     # PROTOCOL CONSUMES
@@ -138,14 +142,10 @@
   gEfiFirmwareVolume2ProtocolGuid               # PROTOCOL CONSUMES
   gEfiGraphicsOutputProtocolGuid                # PROTOCOL SOMETIMES_CONSUMES
   gEfiHiiFontProtocolGuid                       # PROTOCOL CONSUMES
-  gEfiLegacy8259ProtocolGuid					## PROTOCOL SOMETIMES_CONSUMES
   gEfiLoadedImageProtocolGuid                   # PROTOCOL CONSUMES
-  gEfiOEMBadgingProtocolGuid                    # PROTOCOL CONSUMES
   gEfiPciIoProtocolGuid                         # PROTOCOL CONSUMES 
   gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
-  gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
   gEfiSimpleNetworkProtocolGuid                 # PROTOCOL CONSUMES
-  gEfiUgaDrawProtocolGuid |PcdUgaConsumeSupport # PROTOCOL SOMETIMES_CONSUMES
   
   gEfiAbsolutePointerProtocolGuid
   gEfiAcpiTableProtocolGuid
@@ -153,15 +153,12 @@
   gEfiEdidDiscoveredProtocolGuid
   gEfiHiiDatabaseProtocolGuid
   gEfiHiiImageProtocolGuid
-  gEfiHiiProtocolGuid
   gEfiSimplePointerProtocolGuid
   gEfiSmbiosProtocolGuid
   gEfiSecurityArchProtocolGuid  
   gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
-  gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
   gEfiExtScsiPassThruProtocolGuid               ## PROTOCOL SOMETIMES_CONSUMES
 
-  gEfiLegacyBiosProtocolGuid                    # PROTOCOL TO_START
 
   gEfiLoadFile2ProtocolGuid
   gEfiLoadFileProtocolGuid

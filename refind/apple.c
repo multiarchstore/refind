@@ -162,8 +162,8 @@ EFI_STATUS SetAppleOSInfo() {
         if (AppleOSVersion) {
             LOG(2, LOG_LINE_NORMAL, L"Setting Apple OS information to '%s'", AppleOSVersion);
             AppleOSVersion8 = AllocateZeroPool((StrLen(AppleOSVersion) + 1) * sizeof(CHAR8));
-            UnicodeStrToAsciiStr(AppleOSVersion, AppleOSVersion8);
             if (AppleOSVersion8) {
+                UnicodeStrToAsciiStrS(AppleOSVersion, AppleOSVersion8, StrLen(AppleOSVersion) + 1);
                 Status = refit_call1_wrapper (SetOs->SetOsVersion, AppleOSVersion8);
                 if (!EFI_ERROR(Status))
                     Status = EFI_SUCCESS;

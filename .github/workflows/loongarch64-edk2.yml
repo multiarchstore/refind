@@ -25,6 +25,22 @@ jobs:
           ref: edk2-stable202602
           path: edk2
 
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Verify simulated native loong64 container
+        uses: maus007/docker-run-action-fork@5ddaad0f7eedd03f64e412b1931852bd3031b273
+        with:
+          image: linuxdeepin/deepin:crimson-loong64
+          options: --cpus=2 --platform linux/loong64 --privileged -v ${{ github.workspace }}:/work
+          run: |
+            cd /work
+            uname -m
+            test -f Makefile
+
       - name: Install build dependencies
         run: |
           sudo apt-get update
@@ -42,10 +58,11 @@ jobs:
       - name: Download LoongArch64 cross-toolchain
         run: |
           curl -L --fail \
-            -o /tmp/x86_64-cross-tools-loongarch64-unknown-linux-gnu-stable.tar.xz \
-            https://github.com/loong64/cross-tools/releases/latest/download/x86_64-cross-tools-loongarch64-unknown-linux-gnu-stable.tar.xz
+            -o /tmp/x86_64-cross-tools-loongarch64-unknown-linux-gnu-latest.tar.xz \
+            https://github.com/loong64/cross-tools/releases/latest/download/x86_64-cross-tools-loongarch64-unknown-linux-gnu-latest.tar.xz
           mkdir -p "$RUNNER_TEMP/x-tools"
-          tar -xf /tmp/x86_64-cross-tools-loongarch64-unknown-linux-gnu-stable.tar.xz -C "$RUNNER_TEMP/x-tools"
+          tar -xf /tmp/x86_64-cross-tools-loongarch64-unknown-linux-gnu-latest.tar.xz -C "$RUNNER_TEMP/x-tools"
+          echo "LOONGARCH64_TOOLCHAIN_BIN=$RUNNER_TEMP/x-tools/loongarch64-unknown-linux-gnu/bin" >> "$GITHUB_ENV"
           echo "GCC5_LOONGARCH64_PREFIX=$RUNNER_TEMP/x-tools/loongarch64-unknown-linux-gnu/bin/loongarch64-unknown-linux-gnu-" >> "$GITHUB_ENV"
 
       - name: Prepare EDK2 BaseTools
@@ -62,6 +79,7 @@ jobs:
 
       - name: Build rEFInd for LoongArch64 (EDK2)
         run: |
+          export PATH="$LOONGARCH64_TOOLCHAIN_BIN:$PATH"
           make EDK2BASE="$EDK2BASE" \
                ARCH="$ARCH" \
                EDK2_TARGET="$EDK2_TARGET" \
@@ -75,5 +93,4 @@ jobs:
           if-no-files-found: error
           path: |
             refind/refind_loongarch64.efi
-            gptsync/gptsync_loongarch64.efi
             drivers_loongarch64/*.efi

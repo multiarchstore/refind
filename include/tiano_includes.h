@@ -19,14 +19,12 @@
 #include <PiDxe.h>
 #include <Base.h>
 #include <Uefi.h>
-#include <FrameworkDxe.h>
 // Protocol Includes
 #include <Protocol/AbsolutePointer.h>
 #include <Protocol/AcpiTable.h>
 #include <Protocol/BlockIo.h>
 #include <Protocol/BlockIo2.h>
 #include <Protocol/Cpu.h>
-#include <Protocol/DataHub.h>
 #include <Protocol/DebugPort.h>
 #include <Protocol/Decompress.h>
 #include <Protocol/DevicePath.h>
@@ -36,16 +34,13 @@
 #include <Protocol/EdidActive.h>
 #include <Protocol/EdidDiscovered.h>
 #include <Protocol/FirmwareVolume2.h>
-#include <Protocol/FrameworkHii.h>
 #include <Protocol/GraphicsOutput.h>
 #include <Protocol/HiiDatabase.h>
 #include <Protocol/HiiImage.h>
-#include <Protocol/LegacyBios.h>
 #include <Protocol/LoadedImage.h>
 #include <Protocol/LoadedImage.h>
 #include <Protocol/PciIo.h>
 #include <Protocol/ScsiIo.h>
-#include <Protocol/ScsiPassThru.h>
 #include <Protocol/ScsiPassThruExt.h>
 #include <Protocol/SimpleFileSystem.h>
 #include <Protocol/SimpleNetwork.h>
@@ -54,17 +49,14 @@
 #include <Protocol/SimpleTextOut.h>
 #include <Protocol/Smbios.h>
 #include <Protocol/SmbusHc.h>
-#include <Protocol/UgaDraw.h>
-#include <Protocol/UgaIo.h>
+#include <Protocol/GraphicsOutput.h>
 #include <Protocol/UnicodeCollation.h>
 #include <Protocol/UsbIo.h>
-#include <Protocol/LegacyBios.h>
 
 // Guid Includes
 #include <Guid/Acpi.h>
 #include <Guid/ConsoleInDevice.h>
 #include <Guid/ConsoleOutDevice.h>
-#include <Guid/DataHubRecords.h>
 #include <Guid/DxeServices.h>
 #include <Guid/EventGroup.h>
 #include <Guid/FileInfo.h>

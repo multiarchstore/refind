@@ -75,7 +75,9 @@
 
 [Components]
   RefindPkg/refind.inf
+!if $(ARCH) != LOONGARCH64
   RefindPkg/gptsync.inf
+!endif
   RefindPkg/filesystems/ext2.inf
   RefindPkg/filesystems/ext4.inf
   RefindPkg/filesystems/btrfs.inf

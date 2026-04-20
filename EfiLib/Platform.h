@@ -40,16 +40,13 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Library/UefiRuntimeServicesTableLib.h>
 #include <Library/UefiRuntimeLib.h>
 
-#include <Framework/FrameworkInternalFormRepresentation.h>
+#include <Uefi/UefiInternalFormRepresentation.h>
 
 #include <IndustryStandard/Acpi10.h>
 #include <IndustryStandard/Acpi20.h>
 
 #include <Protocol/Cpu.h>
-#include <Protocol/CpuIo.h>
-#include <Protocol/DataHub.h>
 #include <Protocol/DevicePathToText.h>
-#include <Protocol/FrameworkHii.h>
 #include <Protocol/Smbios.h>
 #include <Protocol/VariableWrite.h>
 #include <Protocol/Variable.h>

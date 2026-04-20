@@ -153,20 +153,30 @@ fs_tiano:
 # than my own custom Makefiles (except this top-level one)
 edk2: build_edk2
 	cp $(EDK2_BUILDLOC)/refind.efi ./refind/refind_$(FILENAME_CODE).efi
+ifneq ($(ARCH),loongarch64)
 	cp $(EDK2_BUILDLOC)/gptsync.efi ./gptsync/gptsync_$(FILENAME_CODE).efi
+endif
 ifneq ($(OMIT_SBAT), 1)
 	$(OBJCOPY) --set-section-alignment '.sbat=512' --add-section .sbat=$(REFIND_SBAT_CSV) \
 		--adjust-section-vma .sbat+10000000 ./refind/refind_$(FILENAME_CODE).efi
+ifneq ($(ARCH),loongarch64)
 	$(OBJCOPY) --set-section-alignment '.sbat=512' --add-section .sbat=$(REFIND_SBAT_CSV) \
 		--adjust-section-vma .sbat+10000000 ./gptsync/gptsync_$(FILENAME_CODE).efi
+endif
 endif
 
 all_edk2: build_edk2 fs_edk2
 	cp $(EDK2_BUILDLOC)/refind.efi ./refind/refind_$(FILENAME_CODE).efi
+ifneq ($(ARCH),loongarch64)
 	cp $(EDK2_BUILDLOC)/gptsync.efi ./gptsync/gptsync_$(FILENAME_CODE).efi
+endif
 
 gptsync_edk2: build_edk2
+ifeq ($(ARCH),loongarch64)
+	@echo "Skipping gptsync build output for LoongArch64"
+else
 	cp $(EDK2_BUILDLOC)/gptsync.efi ./gptsync/gptsync_$(FILENAME_CODE).efi
+endif
 
 fs_edk2: build_edk2
 ifeq ($(OMIT_SBAT), 1)
