@@ -18,6 +18,7 @@ else
 ifeq (loong64, $(DEB_HOST_ARCH_CPU))
 	ARCH = loongarch64
 	EFI_ARCH := loongarch64
+	LOONGARCH64_CROSS_PREFIX :=
 else
 	$(warning EFI architecture for $(DEB_HOST_ARCH_CPU) is unknown)
 	ARCH := $(DEB_HOST_ARCH_CPU)
@@ -35,8 +36,8 @@ override_dh_auto_clean:
 	rm -rf drivers_*/
 
 override_dh_auto_build:
-	dh_auto_build -- gnuefi 'ARCH=$(ARCH)'
-	dh_auto_build -- fs_gnuefi 'ARCH=$(ARCH)'
+	dh_auto_build -- gnuefi 'ARCH=$(ARCH)' 'LOONGARCH64_CROSS_PREFIX=$(LOONGARCH64_CROSS_PREFIX)'
+	dh_auto_build -- fs_gnuefi 'ARCH=$(ARCH)' 'LOONGARCH64_CROSS_PREFIX=$(LOONGARCH64_CROSS_PREFIX)'
 
 override_dh_auto_install:
 	# "make install" actually runs "efi-install" for the current system, so let's not do that :)
