@@ -49,7 +49,6 @@
 #include <Protocol/SimpleTextOut.h>
 #include <Protocol/Smbios.h>
 #include <Protocol/SmbusHc.h>
-#include <Protocol/GraphicsOutput.h>
 #include <Protocol/UnicodeCollation.h>
 #include <Protocol/UsbIo.h>
 

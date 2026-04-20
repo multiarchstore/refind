@@ -67,9 +67,11 @@
   libeg/text.c
 
 [Sources.IA32]
+  # Legacy BIOS support code is only built on x86 targets.
   EfiLib/legacy.c
 
 [Sources.X64]
+  # Legacy BIOS support code is only built on x86 targets.
   EfiLib/legacy.c
 
 [Packages]
