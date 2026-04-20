@@ -82,7 +82,9 @@ jobs:
               cp -a /work /tmp/refind-loong64
               cd /tmp/refind-loong64
               dpkg-buildpackage -us -uc -b
-              cp -a /tmp/*.deb /tmp/*.changes /tmp/*.buildinfo /work/artifacts/deb-loong64/
+              artifacts="$(find /tmp -maxdepth 1 -type f \( -name "*.deb" -o -name "*.changes" -o -name "*.buildinfo" \))"
+              [ -n "$artifacts" ] || { echo "No Debian artifacts found"; exit 1; }
+              cp -a $artifacts /work/artifacts/deb-loong64/
             '
 
       - name: Build rEFInd for LoongArch64 (EDK2)
@@ -107,5 +109,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: refind-loong64-deb
-          if-no-files-found: error
           path: artifacts/deb-loong64/*
+          if-no-files-found: error
