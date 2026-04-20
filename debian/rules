@@ -39,8 +39,8 @@ ifeq (loong64, $(DEB_HOST_ARCH_CPU))
 	dh_auto_build -- edk2 'ARCH=$(ARCH)' 'EDK2BASE=$(CURDIR)/edk2'
 	dh_auto_build -- fs_edk2 'ARCH=$(ARCH)' 'EDK2BASE=$(CURDIR)/edk2'
 else
-	dh_auto_build -- gnuefi 'ARCH=$(ARCH)' 'LOONGARCH64_CROSS_PREFIX=$(LOONGARCH64_CROSS_PREFIX)'
-	dh_auto_build -- fs_gnuefi 'ARCH=$(ARCH)' 'LOONGARCH64_CROSS_PREFIX=$(LOONGARCH64_CROSS_PREFIX)'
+	dh_auto_build -- gnuefi 'ARCH=$(ARCH)'
+	dh_auto_build -- fs_gnuefi 'ARCH=$(ARCH)'
 endif
 
 override_dh_auto_install:
