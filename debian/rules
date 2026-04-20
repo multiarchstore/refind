@@ -18,7 +18,11 @@ else
 ifeq (loong64, $(DEB_HOST_ARCH_CPU))
 	ARCH = loongarch64
 	EFI_ARCH := loongarch64
+ifeq (loong64, $(DEB_BUILD_ARCH_CPU))
 	LOONGARCH64_CROSS_PREFIX :=
+else
+	LOONGARCH64_CROSS_PREFIX := loongarch64-linux-gnu-
+endif
 else
 	$(warning EFI architecture for $(DEB_HOST_ARCH_CPU) is unknown)
 	ARCH := $(DEB_HOST_ARCH_CPU)

@@ -29,18 +29,21 @@ jobs:
           path: edk2
           submodules: recursive
 
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
+            binutils-loongarch64-linux-gnu \
+            gcc-loongarch64-linux-gnu \
+            debhelper \
+            devscripts \
+            dpkg-dev \
+            fakeroot \
+            gettext \
+            gnu-efi \
             iasl \
+            mtools \
             nasm \
             python3 \
             python3-pip \
@@ -61,31 +64,13 @@ jobs:
         run: |
           make -C edk2/BaseTools -j"$(nproc)"
 
-      - name: Build loong64 Debian package in container
+      - name: Build loong64 Debian package
         run: |
           mkdir -p "$GITHUB_WORKSPACE/artifacts/deb-loong64"
-          docker run --rm --platform linux/loong64 --privileged \
-            -v "$GITHUB_WORKSPACE:/work" linuxdeepin/deepin:crimson-loong64 \
-            sh -lc '
-              set -e
-              export DEBIAN_FRONTEND=noninteractive
-              apt-get update
-              apt-get install -y \
-                build-essential \
-                debhelper \
-                devscripts \
-                dpkg-dev \
-                fakeroot \
-                gnu-efi \
-                mtools \
-                gettext
-              cp -a /work /tmp/refind-loong64
-              cd /tmp/refind-loong64
-              dpkg-buildpackage -us -uc -b
-              artifacts="$(find /tmp -maxdepth 1 -type f \( -name "*.deb" -o -name "*.changes" -o -name "*.buildinfo" \))"
-              [ -n "$artifacts" ] || { echo "No Debian artifacts found"; exit 1; }
-              cp -a $artifacts /work/artifacts/deb-loong64/
-            '
+          dpkg-buildpackage -us -uc -b -a loong64
+          artifacts="$(find "$GITHUB_WORKSPACE/.." -maxdepth 1 -type f \( -name "refind_*_loong64.deb" -o -name "refind_*_*.changes" -o -name "refind_*_*.buildinfo" \))"
+          [ -n "$artifacts" ] || { echo "No Debian artifacts found"; exit 1; }
+          cp -a $artifacts "$GITHUB_WORKSPACE/artifacts/deb-loong64/"
 
       - name: Build rEFInd for LoongArch64 (EDK2)
         run: |
