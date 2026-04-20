@@ -79,14 +79,13 @@ jobs:
           mkdir -p "$package_dir/refind/drivers_loongarch64" "$package_dir/refind/tools_loongarch64"
           compgen -G 'drivers_loongarch64/*_loongarch64.efi' > /dev/null || { echo "Missing LoongArch64 filesystem drivers"; exit 1; }
           cp --preserve=timestamps drivers_loongarch64/*_loongarch64.efi "$package_dir/refind/drivers_loongarch64/"
-          cp --preserve=timestamps filesystems/LICENSE*txt "$package_dir/refind/drivers_loongarch64/"
+          cp --preserve=timestamps filesystems/LICENSE*.txt "$package_dir/refind/drivers_loongarch64/"
           cp --preserve=timestamps refind/refind_loongarch64.efi "$package_dir/refind/"
           cp --preserve=timestamps refind.conf-sample "$package_dir/refind/"
           cp -a icons "$package_dir/refind/"
           cp -a docs keys banners fonts "$package_dir/"
-          cp --preserve=timestamps COPYING.txt LICENSE.txt README.txt CREDITS.txt NEWS.txt \
-             refind-install refind-mkdefault refind-sb-healthcheck mkrlconf mvrefind mountesp \
-             "$package_dir/"
+          cp --preserve=timestamps COPYING.txt LICENSE.txt README.txt CREDITS.txt NEWS.txt "$package_dir/"
+          cp --preserve=timestamps refind-install refind-mkdefault refind-sb-healthcheck mkrlconf mvrefind mountesp "$package_dir/"
           (
             cd "$RUNNER_TEMP"
             zip -9r "$zip_path" "$package_root"
