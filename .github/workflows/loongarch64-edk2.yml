@@ -34,17 +34,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
-            debhelper \
-            devscripts \
-            dpkg-dev \
-            fakeroot \
             gettext \
             iasl \
             mtools \
             nasm \
             python3 \
             python3-pip \
-            uuid-dev
+            uuid-dev \
+            zip
           pip3 install -r edk2/pip-requirements.txt
 
       - name: Download LoongArch64 cross-toolchain
@@ -61,29 +58,6 @@ jobs:
         run: |
           make -C edk2/BaseTools -j"$(nproc)"
 
-      - name: Build loong64 Debian package
-        run: |
-          mkdir -p "$GITHUB_WORKSPACE/artifacts/deb-loong64"
-          build_dir="/tmp/refind-loong64"
-          rm -rf "$build_dir"
-          cp -a "$GITHUB_WORKSPACE" "$build_dir"
-          cd "$build_dir"
-          dpkg-buildpackage -us -uc -b -a loong64
-          source_name="$(dpkg-parsechangelog -S Source)"
-          version="$(dpkg-parsechangelog -S Version)"
-          artifact_prefix="/tmp/${source_name}_${version}_loong64"
-          deb_file="${artifact_prefix}.deb"
-          changes_file="${artifact_prefix}.changes"
-          buildinfo_file="${artifact_prefix}.buildinfo"
-          [ -f "$deb_file" ] || { echo "Missing deb artifact: $deb_file"; exit 1; }
-          [ -f "$changes_file" ] || { echo "Missing changes artifact: $changes_file"; exit 1; }
-          [ -f "$buildinfo_file" ] || { echo "Missing buildinfo artifact: $buildinfo_file"; exit 1; }
-          deb_listing="$(dpkg-deb -c "$deb_file")"
-          grep -q './etc/refind.d/keys/' <<< "$deb_listing" || { echo "Missing keys directory in deb"; exit 1; }
-          grep -q 'usr/share/refind/refind/refind_loongarch64.efi' <<< "$deb_listing" || { echo "Missing refind_loongarch64.efi in deb"; exit 1; }
-          grep -q 'usr/share/refind/refind/drivers_loongarch64/' <<< "$deb_listing" || { echo "Missing drivers_loongarch64 in deb"; exit 1; }
-          cp -a "$deb_file" "$changes_file" "$buildinfo_file" "$GITHUB_WORKSPACE/artifacts/deb-loong64/"
-
       - name: Build rEFInd for LoongArch64 (EDK2)
         run: |
           export PATH="$LOONGARCH64_TOOLCHAIN_BIN:$PATH"
@@ -93,18 +67,34 @@ jobs:
                EDK2_TOOLCHAIN="$EDK2_TOOLCHAIN" \
                edk2 fs_edk2
 
-      - name: Upload LoongArch64 EFI artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: refind-loongarch64-edk2
-          if-no-files-found: error
-          path: |
-            refind/refind_loongarch64.efi
-            drivers_loongarch64/*.efi
+      - name: Package LoongArch64 zip (official layout style)
+        run: |
+          set -euo pipefail
+          version="$(sed -n '1s/^refind (\([^)]*\)).*/\1/p' debian/changelog)"
+          [ -n "$version" ] || { echo "Failed to parse version from debian/changelog"; exit 1; }
+          package_root="refind-bin-$version"
+          package_dir="$RUNNER_TEMP/$package_root"
+          zip_path="$GITHUB_WORKSPACE/$package_root.zip"
+          rm -rf "$package_dir" "$zip_path"
+          mkdir -p "$package_dir/refind/drivers_loongarch64" "$package_dir/refind/tools_loongarch64"
+          cp --preserve=timestamps drivers_loongarch64/*_loongarch64.efi "$package_dir/refind/drivers_loongarch64/"
+          cp --preserve=timestamps filesystems/LICENSE*txt "$package_dir/refind/drivers_loongarch64/"
+          cp --preserve=timestamps refind/refind_loongarch64.efi "$package_dir/refind/"
+          cp --preserve=timestamps refind.conf-sample "$package_dir/refind/"
+          cp -a icons "$package_dir/refind/"
+          cp -a docs keys banners fonts "$package_dir/"
+          cp --preserve=timestamps COPYING.txt LICENSE.txt README.txt CREDITS.txt NEWS.txt \
+             refind-install refind-mkdefault refind-sb-healthcheck mkrlconf mvrefind mountesp \
+             "$package_dir/"
+          (
+            cd "$RUNNER_TEMP"
+            zip -9r "$zip_path" "$package_root"
+          )
+          echo "ZIP_PATH=$zip_path" >> "$GITHUB_ENV"
 
-      - name: Upload loong64 Debian package
+      - name: Upload LoongArch64 zip artifact
         uses: actions/upload-artifact@v4
         with:
-          name: refind-loong64-deb
-          path: artifacts/deb-loong64/*
+          name: refind-loongarch64-binzip
           if-no-files-found: error
+          path: ${{ env.ZIP_PATH }}
