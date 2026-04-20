@@ -256,7 +256,7 @@ static BOOLEAN KeepReading(IN OUT CHAR16 *p, IN OUT BOOLEAN *IsQuoted) {
         if (p[1] == L'"') {
             Temp = StrDuplicate(&p[1]);
             if (Temp != NULL) {
-                StrCpyS(p, StrLen(Temp) + 1, Temp);
+                MyCopyMem(p, Temp, StrSize(Temp));
                 MyFreePool(Temp);
             }
             MoreToRead = TRUE;

@@ -366,7 +366,8 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
         } // safe mode allowed
 
         // check for Apple hardware diagnostics
-        StrCpyS(DiagsFileName, 256, L"System\\Library\\CoreServices\\.diagnostics\\diags.efi");
+        StrCpyS(DiagsFileName, sizeof (DiagsFileName) / sizeof (DiagsFileName[0]),
+                L"System\\Library\\CoreServices\\.diagnostics\\diags.efi");
         if (FileExists(Volume->RootDir, DiagsFileName) && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HWTEST)) {
             SubEntry = InitializeLoaderEntry(Entry);
             if (SubEntry != NULL) {

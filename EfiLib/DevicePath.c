@@ -67,7 +67,7 @@ MyCatPrint (
 
   Str->Maxlen = MAX_CHAR * sizeof (UINT16);
   if (StringSize < Str->Maxlen) {
-    StrCatS (Str->Str, StringSize / sizeof (CHAR16), AppendStr);
+    CopyMem(&(Str->Str[StrLen(Str->Str)]), AppendStr, StrSize(AppendStr));
     Str->Len = StringSize - sizeof (UINT16);
   }
 

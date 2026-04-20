@@ -217,7 +217,7 @@ BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
         } else {
             TempString = StrDuplicate(&SubString[i]);
             if (TempString != NULL) {
-                StrCpyS(&SubString[1], StrLen(TempString) + 1, TempString);
+                MyCopyMem(&SubString[1], TempString, StrSize(TempString));
                 MyFreePool(TempString);
                 HasChanged = TRUE;
             } else {
@@ -350,7 +350,12 @@ BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List) {
                 Found[0] = L'\0';
             } // if/else
         } else { // Found is NOT final element
-            StrCpyS(Found, StrLen(&Comma[1]) + 1, &Comma[1]);
+            UINTN i = 0;
+            while (Comma[1 + i] != L'\0') {
+                Found[i] = Comma[1 + i];
+                i++;
+            }
+            Found[i] = L'\0';
         } // if/else
         return TRUE;
     } else {
@@ -417,7 +422,7 @@ BOOLEAN ReplaceSubstring(IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN
                 FoundSearchString[-1] = L'\0';
                 ReplString = SearchString;
             } // if
-            StrCpyS(NewString, StrLen(*MainString) + 1, *MainString);
+            MyCopyMem(NewString, *MainString, StrSize(*MainString));
             MergeStrings(&NewString, ReplString, L'\0');
             MergeStrings(&NewString, EndString, L'\0');
             MyFreePool(MainString);
