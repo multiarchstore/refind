@@ -72,13 +72,13 @@ jobs:
           set -euo pipefail
           version="$(sed -n 's/^#define REFIND_VERSION L"\(.*\)"/\1/p' include/version.h)"
           [ -n "$version" ] || { echo "Failed to parse version from include/version.h"; exit 1; }
-          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Unexpected version format in include/version.h: $version"; exit 1; }
+          echo "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "Unexpected version format in include/version.h: $version"; exit 1; }
           package_root="refind-bin-$version"
           package_dir="$RUNNER_TEMP/$package_root"
           zip_path="$GITHUB_WORKSPACE/$package_root.zip"
           rm -rf "$package_dir" "$zip_path"
           mkdir -p "$package_dir/refind/drivers_loongarch64" "$package_dir/refind/tools_loongarch64"
-          compgen -G 'drivers_loongarch64/*_loongarch64.efi' > /dev/null || { echo "No LoongArch64 driver EFI files found in drivers_loongarch64/"; exit 1; }
+          ls drivers_loongarch64/*_loongarch64.efi >/dev/null 2>&1 || { echo "No LoongArch64 driver EFI files found in drivers_loongarch64/"; exit 1; }
           cp --preserve=timestamps drivers_loongarch64/*_loongarch64.efi "$package_dir/refind/drivers_loongarch64/"
           cp --preserve=timestamps filesystems/LICENSE*.txt "$package_dir/refind/drivers_loongarch64/"
           cp --preserve=timestamps refind/refind_loongarch64.efi "$package_dir/refind/"
