@@ -93,12 +93,10 @@
   PerformanceLib
 
 [LibraryClasses.AARCH64]
-  BaseStackCheckLib
 # Comment out CompilerIntrinsicsLib when compiling for AARCH64 using UDK2014
   CompilerIntrinsicsLib
 
 [LibraryClasses.LOONGARCH64]
-  BaseStackCheckLib
 # Comment out CompilerIntrinsicsLib when compiling for LOONGARCH64 using UDK2014
   CompilerIntrinsicsLib
 
@@ -128,7 +126,6 @@
   gEfiSimpleTextInProtocolGuid                            # ALWAYS_CONSUMED
   gEfiSimpleTextInputExProtocolGuid                       # ALWAYS_CONSUMED
   gEfiSimpleTextOutProtocolGuid                           # ALWAYS_CONSUMED
-  gEfiUnicodeCollationProtocolGuid                       # ALWAYS_CONSUMED  
   gEfiUnicodeCollation2ProtocolGuid                       # ALWAYS_CONSUMED  
   
   gEfiAcpiS3SaveProtocolGuid                    # PROTOCOL CONSUMES
@@ -169,9 +166,6 @@
   gEfiLoadFile2ProtocolGuid
   gEfiLoadFileProtocolGuid
   gEfiHiiPackageListProtocolGuid
-
-[FeaturePcd]
-  gEfiMdePkgTokenSpaceGuid.PcdUgaConsumeSupport
 
 [Pcd]
 
