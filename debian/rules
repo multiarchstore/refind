@@ -1,6 +1,7 @@
 #!/usr/bin/make -f
 
 export DH_VERBOSE := 1
+EDK2BASE ?= $(CURDIR)/edk2
 
 include /usr/share/dpkg/architecture.mk
 ifeq (amd64, $(DEB_HOST_ARCH_CPU))
@@ -18,7 +19,6 @@ else
 ifeq (loong64, $(DEB_HOST_ARCH_CPU))
 	ARCH = loongarch64
 	EFI_ARCH := loongarch64
-	EDK2BASE ?= $(CURDIR)/edk2
 else
 	$(warning EFI architecture for $(DEB_HOST_ARCH_CPU) is unknown)
 	ARCH := $(DEB_HOST_ARCH_CPU)

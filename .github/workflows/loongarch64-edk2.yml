@@ -66,6 +66,7 @@ jobs:
       - name: Build loong64 Debian package
         run: |
           mkdir -p "$GITHUB_WORKSPACE/artifacts/deb-loong64"
+          rm -f "$GITHUB_WORKSPACE"/../refind_*_loong64.deb "$GITHUB_WORKSPACE"/../refind_*_loong64.changes "$GITHUB_WORKSPACE"/../refind_*_loong64.buildinfo
           dpkg-buildpackage -us -uc -b -a loong64
           mapfile -t deb_files < <(find "$GITHUB_WORKSPACE/.." -maxdepth 1 -type f -name "refind_*_loong64.deb")
           [ "${#deb_files[@]}" -eq 1 ] || { echo "Expected exactly one loong64 deb artifact, found ${#deb_files[@]}"; printf '%s\n' "${deb_files[@]}"; exit 1; }
@@ -74,9 +75,10 @@ jobs:
           buildinfo_file="${deb_file%.deb}.buildinfo"
           [ -f "$changes_file" ] || { echo "Missing changes artifact: $changes_file"; exit 1; }
           [ -f "$buildinfo_file" ] || { echo "Missing buildinfo artifact: $buildinfo_file"; exit 1; }
-          dpkg-deb -c "$deb_file" | grep -q './etc/refind.d/keys/' || { echo "Missing keys directory in deb"; exit 1; }
-          dpkg-deb -c "$deb_file" | grep -q 'usr/share/refind/refind/refind_loongarch64.efi' || { echo "Missing refind_loongarch64.efi in deb"; exit 1; }
-          dpkg-deb -c "$deb_file" | grep -q 'usr/share/refind/refind/drivers_loongarch64/' || { echo "Missing drivers_loongarch64 in deb"; exit 1; }
+          deb_listing="$(dpkg-deb -c "$deb_file")"
+          grep -q './etc/refind.d/keys/' <<< "$deb_listing" || { echo "Missing keys directory in deb"; exit 1; }
+          grep -q 'usr/share/refind/refind/refind_loongarch64.efi' <<< "$deb_listing" || { echo "Missing refind_loongarch64.efi in deb"; exit 1; }
+          grep -q 'usr/share/refind/refind/drivers_loongarch64/' <<< "$deb_listing" || { echo "Missing drivers_loongarch64 in deb"; exit 1; }
           cp -a "$deb_file" "$changes_file" "$buildinfo_file" "$GITHUB_WORKSPACE/artifacts/deb-loong64/"
 
       - name: Build rEFInd for LoongArch64 (EDK2)
