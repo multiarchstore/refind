@@ -37,6 +37,7 @@ override_dh_auto_clean:
 
 override_dh_auto_build:
 ifeq (loong64, $(DEB_HOST_ARCH_CPU))
+	test -d '$(EDK2BASE)' || { echo "EDK2BASE not found: $(EDK2BASE)"; exit 1; }
 	dh_auto_build -- edk2 'ARCH=$(ARCH)' 'EDK2BASE=$(EDK2BASE)'
 	dh_auto_build -- fs_edk2 'ARCH=$(ARCH)' 'EDK2BASE=$(EDK2BASE)'
 else

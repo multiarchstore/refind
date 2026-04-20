@@ -66,13 +66,18 @@ jobs:
       - name: Build loong64 Debian package
         run: |
           mkdir -p "$GITHUB_WORKSPACE/artifacts/deb-loong64"
-          rm -f "$GITHUB_WORKSPACE"/../refind_*_loong64.deb "$GITHUB_WORKSPACE"/../refind_*_loong64.changes "$GITHUB_WORKSPACE"/../refind_*_loong64.buildinfo
+          build_dir="/tmp/refind-loong64"
+          rm -rf "$build_dir"
+          cp -a "$GITHUB_WORKSPACE" "$build_dir"
+          cd "$build_dir"
           dpkg-buildpackage -us -uc -b -a loong64
-          mapfile -t deb_files < <(find "$GITHUB_WORKSPACE/.." -maxdepth 1 -type f -name "refind_*_loong64.deb")
-          [ "${#deb_files[@]}" -eq 1 ] || { echo "Expected exactly one loong64 deb artifact, found ${#deb_files[@]}"; printf '%s\n' "${deb_files[@]}"; exit 1; }
-          deb_file="${deb_files[0]}"
-          changes_file="${deb_file%.deb}.changes"
-          buildinfo_file="${deb_file%.deb}.buildinfo"
+          source_name="$(dpkg-parsechangelog -S Source)"
+          version="$(dpkg-parsechangelog -S Version)"
+          artifact_prefix="/tmp/${source_name}_${version}_loong64"
+          deb_file="${artifact_prefix}.deb"
+          changes_file="${artifact_prefix}.changes"
+          buildinfo_file="${artifact_prefix}.buildinfo"
+          [ -f "$deb_file" ] || { echo "Missing deb artifact: $deb_file"; exit 1; }
           [ -f "$changes_file" ] || { echo "Missing changes artifact: $changes_file"; exit 1; }
           [ -f "$buildinfo_file" ] || { echo "Missing buildinfo artifact: $buildinfo_file"; exit 1; }
           deb_listing="$(dpkg-deb -c "$deb_file")"
