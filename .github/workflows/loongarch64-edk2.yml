@@ -1,0 +1,79 @@
+name: LoongArch64 EDK2 Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-loongarch64-edk2:
+    runs-on: ubuntu-latest
+    env:
+      EDK2BASE: ${{ github.workspace }}/edk2
+      ARCH: loongarch64
+      EDK2_TARGET: RELEASE
+      EDK2_TOOLCHAIN: GCC5
+
+    steps:
+      - name: Checkout rEFInd
+        uses: actions/checkout@v4
+
+      - name: Checkout EDK2 stable202602
+        uses: actions/checkout@v4
+        with:
+          repository: tianocore/edk2
+          ref: edk2-stable202602
+          path: edk2
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            iasl \
+            nasm \
+            python3 \
+            python3-pip \
+            uuid-dev
+
+      - name: Install EDK2 Python dependencies
+        run: pip3 install -r edk2/pip-requirements.txt
+
+      - name: Download LoongArch64 cross-toolchain
+        run: |
+          curl -L --fail \
+            -o /tmp/x86_64-cross-tools-loongarch64-unknown-linux-gnu-stable.tar.xz \
+            https://github.com/loong64/cross-tools/releases/latest/download/x86_64-cross-tools-loongarch64-unknown-linux-gnu-stable.tar.xz
+          mkdir -p "$RUNNER_TEMP/x-tools"
+          tar -xf /tmp/x86_64-cross-tools-loongarch64-unknown-linux-gnu-stable.tar.xz -C "$RUNNER_TEMP/x-tools"
+          echo "GCC5_LOONGARCH64_PREFIX=$RUNNER_TEMP/x-tools/loongarch64-unknown-linux-gnu/bin/loongarch64-unknown-linux-gnu-" >> "$GITHUB_ENV"
+
+      - name: Prepare EDK2 BaseTools
+        run: |
+          git -C edk2 submodule update --init \
+            BaseTools/Source/C/BrotliCompress/brotli \
+            CryptoPkg/Library/MbedTlsLib/mbedtls \
+            CryptoPkg/Library/OpensslLib/openssl \
+            MdeModulePkg/Library/BrotliCustomDecompressLib/brotli \
+            MdeModulePkg/Universal/RegularExpressionDxe/oniguruma \
+            MdePkg/Library/BaseFdtLib/libfdt \
+            MdePkg/Library/MipiSysTLib/mipisyst
+          make -C edk2/BaseTools -j"$(nproc)"
+
+      - name: Build rEFInd for LoongArch64 (EDK2)
+        run: |
+          make EDK2BASE="$EDK2BASE" \
+               ARCH="$ARCH" \
+               EDK2_TARGET="$EDK2_TARGET" \
+               EDK2_TOOLCHAIN="$EDK2_TOOLCHAIN" \
+               edk2 fs_edk2
+
+      - name: Upload LoongArch64 EFI artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: refind-loongarch64-edk2
+          if-no-files-found: error
+          path: |
+            refind/refind_loongarch64.efi
+            gptsync/gptsync_loongarch64.efi
+            drivers_loongarch64/*.efi

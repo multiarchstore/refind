@@ -70,8 +70,6 @@
 [Packages]
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
-  IntelFrameworkPkg/IntelFrameworkPkg.dec
-  IntelFrameworkModulePkg/IntelFrameworkModulePkg.dec
 # Uncomment the below when compiling with OS X
 #  StdLib/StdLib.dec
 
