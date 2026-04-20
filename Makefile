@@ -23,7 +23,9 @@ export EDK2BASE=/usr/local/edk2-vUDK2018
 # NOTE: Below is overridden for "tiano" targets
 -include $(EDK2BASE)/Conf/target.txt
 THISDIR=$(shell pwd)
-EDK2_BUILDLOC=$(EDK2BASE)/Build/Refind/$(TARGET)_$(TOOL_CHAIN_TAG)/$(UC_ARCH)
+EDK2_TARGET ?= RELEASE
+EDK2_TOOLCHAIN ?= GCC5
+EDK2_BUILDLOC=$(EDK2BASE)/Build/Refind/$(EDK2_TARGET)_$(EDK2_TOOLCHAIN)/$(UC_ARCH)
 EDK2_PROGRAM_BASENAMES=refind gptsync
 EDK2_PROGRAMS=$(EDK2_PROGRAM_BASENAMES:=.efi)
 EDK2_DRIVER_BASENAMES=btrfs ext4 ext2 hfs iso9660 reiserfs
@@ -151,20 +153,30 @@ fs_tiano:
 # than my own custom Makefiles (except this top-level one)
 edk2: build_edk2
 	cp $(EDK2_BUILDLOC)/refind.efi ./refind/refind_$(FILENAME_CODE).efi
+ifneq ($(ARCH),loongarch64)
 	cp $(EDK2_BUILDLOC)/gptsync.efi ./gptsync/gptsync_$(FILENAME_CODE).efi
+endif
 ifneq ($(OMIT_SBAT), 1)
 	$(OBJCOPY) --set-section-alignment '.sbat=512' --add-section .sbat=$(REFIND_SBAT_CSV) \
 		--adjust-section-vma .sbat+10000000 ./refind/refind_$(FILENAME_CODE).efi
+ifneq ($(ARCH),loongarch64)
 	$(OBJCOPY) --set-section-alignment '.sbat=512' --add-section .sbat=$(REFIND_SBAT_CSV) \
 		--adjust-section-vma .sbat+10000000 ./gptsync/gptsync_$(FILENAME_CODE).efi
+endif
 endif
 
 all_edk2: build_edk2 fs_edk2
 	cp $(EDK2_BUILDLOC)/refind.efi ./refind/refind_$(FILENAME_CODE).efi
+ifneq ($(ARCH),loongarch64)
 	cp $(EDK2_BUILDLOC)/gptsync.efi ./gptsync/gptsync_$(FILENAME_CODE).efi
+endif
 
 gptsync_edk2: build_edk2
+ifeq ($(ARCH),loongarch64)
+	@echo "Skipping gptsync build output for LoongArch64"
+else
 	cp $(EDK2_BUILDLOC)/gptsync.efi ./gptsync/gptsync_$(FILENAME_CODE).efi
+endif
 
 fs_edk2: build_edk2
 ifeq ($(OMIT_SBAT), 1)
@@ -184,7 +196,7 @@ endif
 build_edk2: $(EDK2BASE)/RefindPkg
 	cd $(EDK2BASE) && \
 	. ./edksetup.sh BaseTools && \
-	build -a $(UC_ARCH) -p RefindPkg/RefindPkg.dsc
+	build -a $(UC_ARCH) -b $(EDK2_TARGET) -t $(EDK2_TOOLCHAIN) -p RefindPkg/RefindPkg.dsc
 	mkdir -p ./drivers_$(FILENAME_CODE)
 
 $(EDK2BASE)/RefindPkg:

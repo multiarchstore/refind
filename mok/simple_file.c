@@ -70,10 +70,13 @@ generate_path(CHAR16* name, EFI_LOADED_IMAGE *li, EFI_DEVICE_PATH **path, CHAR16
                 pathlen = StrLen(devpathstr);
         }
 
+        UINTN path_name_len;
+
         if (name[0] != '\\')
                 pathlen++;
 
-        *PathName = AllocatePool((pathlen + 1 + StrLen(name))*sizeof(CHAR16));
+        path_name_len = pathlen + 1 + StrLen(name);
+        *PathName = AllocatePool(path_name_len * sizeof(CHAR16));
 
         if (!*PathName) {
                 Print(L"Failed to allocate path buffer\n");
@@ -81,11 +84,11 @@ generate_path(CHAR16* name, EFI_LOADED_IMAGE *li, EFI_DEVICE_PATH **path, CHAR16
                 goto error;
         }
 
-        StrCpy(*PathName, devpathstr);
+        StrCpyS(*PathName, path_name_len, devpathstr);
 
         if (name[0] != '\\')
-                StrCat(*PathName, L"\\");
-        StrCat(*PathName, name);
+                StrCatS(*PathName, path_name_len, L"\\");
+        StrCatS(*PathName, path_name_len, name);
 
         *path = FileDevicePath(li->DeviceHandle, *PathName);
 

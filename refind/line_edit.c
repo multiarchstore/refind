@@ -68,7 +68,7 @@ BOOLEAN line_edit(CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
         line_in = L"";
     size = StrLen(line_in) + 1024;
     line = AllocatePool(size * sizeof(CHAR16));
-    StrCpy(line, line_in);
+    StrCpyS(line, size, line_in);
     len = StrLen(line);
     print = AllocatePool(x_max * sizeof(CHAR16));
 

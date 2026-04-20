@@ -392,7 +392,11 @@ BdsCreateLegacyBootOption (
   //
   // Create new BBS device path node with description string
   //
+#ifdef __MAKEWITH_GNUEFI
   UnicodeStrToAsciiStr (BootDesc, HelpString);
+#else
+  UnicodeStrToAsciiStrS (BootDesc, HelpString, sizeof (HelpString));
+#endif
 
   StringLen = AsciiStrLen (HelpString);
   NewBbsDevPathNode = AllocateZeroPool (sizeof (BBS_BBS_DEVICE_PATH) + StringLen);

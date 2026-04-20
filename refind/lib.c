@@ -1543,11 +1543,6 @@ InitializeUnicodeCollationProtocol (VOID)
     //
     Status = gBS->LocateProtocol(&gEfiUnicodeCollation2ProtocolGuid,
                                  NULL, (VOID **) &mUnicodeCollation);
-    if (EFI_ERROR(Status)) {
-        Status = gBS->LocateProtocol(&gEfiUnicodeCollationProtocolGuid,
-                                     NULL, (VOID **) &mUnicodeCollation);
-
-    }
     return Status;
 }
 

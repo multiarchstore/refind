@@ -68,6 +68,12 @@
 #include "driver_support.h"
 #include "launch_efi.h"
 #include "launch_legacy.h"
+
+#ifndef BBS_HARDDISK
+#define BBS_HARDDISK 0x02
+#define BBS_CDROM    0x03
+#define BBS_USB      0x05
+#endif
 #include "linux.h"
 #include "log.h"
 #include "scan.h"
@@ -360,7 +366,8 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
         } // safe mode allowed
 
         // check for Apple hardware diagnostics
-        StrCpy(DiagsFileName, L"System\\Library\\CoreServices\\.diagnostics\\diags.efi");
+        StrCpyS(DiagsFileName, sizeof (DiagsFileName) / sizeof (DiagsFileName[0]),
+                L"System\\Library\\CoreServices\\.diagnostics\\diags.efi");
         if (FileExists(Volume->RootDir, DiagsFileName) && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HWTEST)) {
             SubEntry = InitializeLoaderEntry(Entry);
             if (SubEntry != NULL) {
@@ -1347,8 +1354,10 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
 
     // If UEFI & scanning for legacy loaders & deep legacy scan, update NVRAM boot manager list
     if ((GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) && ScanForLegacy && GlobalConfig.DeepLegacyScan) {
+#ifndef EFILOONGARCH64
         BdsDeleteAllInvalidLegacyBootOptions();
         BdsAddNonExistingLegacyBootOptions();
+#endif
     } // if
 
     // We temporarily modify GlobalConfig.DontScanFiles and GlobalConfig.DontScanVolumes

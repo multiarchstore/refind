@@ -184,7 +184,7 @@ static EFI_STATUS RenameFile(IN EFI_FILE_PROTOCOL *BaseDir, CHAR16 *OldName, CHA
         if (NewInfo != NULL) {
             MyCopyMem(NewInfo, Buffer, sizeof(EFI_FILE_INFO));
             NewInfo->FileName[0] = 0;
-            StrCat(NewInfo->FileName, NewName);
+            MyCopyMem(NewInfo->FileName, NewName, StrSize(NewName));
             // Note: The below call is where Tow-Boot can error out.
             Status = refit_call4_wrapper(BaseDir->SetInfo,
                                          FilePtr,
@@ -605,7 +605,7 @@ static EFI_STATUS ConstructBootEntry(EFI_HANDLE *TargetVolume,
         Working += sizeof (UINT32);
         *(UINT16 *)Working = DevPathSize;
         Working += sizeof (UINT16);
-        StrCpy((CHAR16 *)Working, Label);
+        MyCopyMem(Working, Label, StrSize(Label));
         Working += StrSize(Label);
         MyCopyMem(Working, DevicePath, DevPathSize);
         // If support for arguments is required in the future, uncomment

@@ -1,0 +1,101 @@
+name: LoongArch64 EDK2 Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-loongarch64-edk2:
+    runs-on: ubuntu-latest
+    env:
+      EDK2BASE: ${{ github.workspace }}/edk2
+      ARCH: loongarch64
+      EDK2_TARGET: RELEASE
+      EDK2_TOOLCHAIN: GCC5
+
+    steps:
+      - name: Checkout rEFInd
+        uses: actions/checkout@v4
+
+      - name: Checkout EDK2 stable202602
+        uses: actions/checkout@v4
+        with:
+          repository: tianocore/edk2
+          ref: edk2-stable202602
+          path: edk2
+          submodules: recursive
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            gettext \
+            iasl \
+            mtools \
+            nasm \
+            python3 \
+            python3-pip \
+            uuid-dev \
+            zip
+          pip3 install -r edk2/pip-requirements.txt
+
+      - name: Download LoongArch64 cross-toolchain
+        run: |
+          curl -L --fail \
+            -o /tmp/x86_64-cross-tools-loongarch64-unknown-linux-gnu-latest.tar.xz \
+            https://github.com/loong64/cross-tools/releases/latest/download/x86_64-cross-tools-loongarch64-unknown-linux-gnu-latest.tar.xz
+          mkdir -p "$RUNNER_TEMP/x-tools"
+          tar -xf /tmp/x86_64-cross-tools-loongarch64-unknown-linux-gnu-latest.tar.xz -C "$RUNNER_TEMP/x-tools"
+          echo "LOONGARCH64_TOOLCHAIN_BIN=$RUNNER_TEMP/x-tools/loongarch64-unknown-linux-gnu/bin" >> "$GITHUB_ENV"
+          echo "GCC5_LOONGARCH64_PREFIX=$RUNNER_TEMP/x-tools/loongarch64-unknown-linux-gnu/bin/loongarch64-unknown-linux-gnu-" >> "$GITHUB_ENV"
+
+      - name: Prepare EDK2 BaseTools
+        run: |
+          make -C edk2/BaseTools -j"$(nproc)"
+
+      - name: Build rEFInd for LoongArch64 (EDK2)
+        run: |
+          export PATH="$LOONGARCH64_TOOLCHAIN_BIN:$PATH"
+          make EDK2BASE="$EDK2BASE" \
+               ARCH="$ARCH" \
+               EDK2_TARGET="$EDK2_TARGET" \
+               EDK2_TOOLCHAIN="$EDK2_TOOLCHAIN" \
+               edk2 fs_edk2
+
+      - name: Package LoongArch64 zip (official layout style)
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^#define REFIND_VERSION L"\(.*\)"/\1/p' include/version.h)"
+          [ -n "$version" ] || { echo "Failed to parse version from include/version.h"; exit 1; }
+          echo "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "Unexpected version format in include/version.h: $version"; exit 1; }
+          package_root="refind-bin-$version"
+          package_dir="$RUNNER_TEMP/$package_root"
+          zip_path="$GITHUB_WORKSPACE/$package_root.zip"
+          rm -rf "$package_dir" "$zip_path"
+          mkdir -p "$package_dir/refind/drivers_loongarch64" "$package_dir/refind/tools_loongarch64"
+          ls drivers_loongarch64/*_loongarch64.efi >/dev/null 2>&1 || { echo "No LoongArch64 driver EFI files found in drivers_loongarch64/"; exit 1; }
+          cp --preserve=timestamps drivers_loongarch64/*_loongarch64.efi "$package_dir/refind/drivers_loongarch64/"
+          cp --preserve=timestamps filesystems/LICENSE*.txt "$package_dir/refind/drivers_loongarch64/"
+          cp --preserve=timestamps refind/refind_loongarch64.efi "$package_dir/refind/"
+          cp --preserve=timestamps refind.conf-sample "$package_dir/refind/"
+          cp -a icons "$package_dir/refind/"
+          cp -a docs keys banners fonts "$package_dir/"
+          cp --preserve=timestamps COPYING.txt LICENSE.txt README.txt CREDITS.txt NEWS.txt "$package_dir/"
+          cp --preserve=timestamps refind-install refind-mkdefault refind-sb-healthcheck mkrlconf mvrefind mountesp "$package_dir/"
+          (
+            cd "$RUNNER_TEMP"
+            zip -9r "$zip_path" "$package_root"
+          )
+          echo "ZIP_PATH=$zip_path" >> "$GITHUB_ENV"
+
+      - name: Upload LoongArch64 zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: refind-loongarch64-binzip
+          if-no-files-found: error
+          path: ${{ env.ZIP_PATH }}

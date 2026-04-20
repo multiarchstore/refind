@@ -34,8 +34,6 @@
 [Packages]
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
-  IntelFrameworkPkg/IntelFrameworkPkg.dec
-  IntelFrameworkModulePkg/IntelFrameworkModulePkg.dec
 
 [LibraryClasses]
   BaseLib
@@ -46,12 +44,10 @@
   UefiApplicationEntryPoint
 
 [LibraryClasses.AARCH64]
-  BaseStackCheckLib
 # Comment out CompilerIntrinsicsLib when compiling for AARCH64 using UDK2014
   CompilerIntrinsicsLib
 
 [LibraryClasses.LOONGARCH64]
-  BaseStackCheckLib
 # Comment out CompilerIntrinsicsLib when compiling for LOONGARCH64 using UDK2014
   CompilerIntrinsicsLib
 
@@ -81,10 +77,8 @@
   gEfiSimpleTextInProtocolGuid                            # ALWAYS_CONSUMED
   gEfiSimpleTextInputExProtocolGuid                       # ALWAYS_CONSUMED
   gEfiSimpleTextOutProtocolGuid                           # ALWAYS_CONSUMED
-  gEfiUnicodeCollationProtocolGuid                       # ALWAYS_CONSUMED  
   gEfiUnicodeCollation2ProtocolGuid                       # ALWAYS_CONSUMED  
   
-  gEfiAcpiS3SaveProtocolGuid                    # PROTOCOL CONSUMES
   gEfiBlockIoProtocolGuid                       # PROTOCOL CONSUMES
   gEfiCpuArchProtocolGuid                       # PROTOCOL CONSUMES
   gEfiDebugPortProtocolGuid                     # PROTOCOL CONSUMES
@@ -94,14 +88,10 @@
   gEfiFirmwareVolume2ProtocolGuid               # PROTOCOL CONSUMES
   gEfiGraphicsOutputProtocolGuid                # PROTOCOL SOMETIMES_CONSUMES
   gEfiHiiFontProtocolGuid                       # PROTOCOL CONSUMES
-  gEfiLegacy8259ProtocolGuid					## PROTOCOL SOMETIMES_CONSUMES
   gEfiLoadedImageProtocolGuid                   # PROTOCOL CONSUMES
-  gEfiOEMBadgingProtocolGuid                    # PROTOCOL CONSUMES
   gEfiPciIoProtocolGuid                         # PROTOCOL CONSUMES 
   gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
-  gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
   gEfiSimpleNetworkProtocolGuid                 # PROTOCOL CONSUMES
-  gEfiUgaDrawProtocolGuid |PcdUgaConsumeSupport # PROTOCOL SOMETIMES_CONSUMES
   
   gEfiAbsolutePointerProtocolGuid
   gEfiAcpiTableProtocolGuid
@@ -109,22 +99,16 @@
   gEfiEdidDiscoveredProtocolGuid
   gEfiHiiDatabaseProtocolGuid
   gEfiHiiImageProtocolGuid
-  gEfiHiiProtocolGuid
   gEfiSimplePointerProtocolGuid
   gEfiSmbiosProtocolGuid
   gEfiSecurityArchProtocolGuid  
   gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
-  gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
   gEfiExtScsiPassThruProtocolGuid               ## PROTOCOL SOMETIMES_CONSUMES
 
-  gEfiLegacyBiosProtocolGuid                    # PROTOCOL TO_START
 
   gEfiLoadFile2ProtocolGuid
   gEfiLoadFileProtocolGuid
   gEfiHiiPackageListProtocolGuid
-
-[FeaturePcd]
-  gEfiMdePkgTokenSpaceGuid.PcdUgaConsumeSupport
 
 [Pcd]
 
