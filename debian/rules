@@ -15,9 +15,14 @@ ifeq (arm64, $(DEB_HOST_ARCH_CPU))
 	ARCH = aarch64
 	EFI_ARCH := aa64
 else
+ifeq (loong64, $(DEB_HOST_ARCH_CPU))
+	ARCH = loongarch64
+	EFI_ARCH := loongarch64
+else
 	$(warning EFI architecture for $(DEB_HOST_ARCH_CPU) is unknown)
 	ARCH := $(DEB_HOST_ARCH_CPU)
 	EFI_ARCH := $(DEB_HOST_ARCH_CPU)
+endif
 endif
 endif
 endif

@@ -27,17 +27,13 @@ jobs:
           repository: tianocore/edk2
           ref: edk2-stable202602
           path: edk2
+          submodules: recursive
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Verify simulated native loong64 container
-        run: |
-          docker run --rm --platform linux/loong64 --privileged -v "$GITHUB_WORKSPACE:/work" linuxdeepin/deepin:crimson-loong64 \
-            sh -lc 'cd /work && uname -m && test -f Makefile'
 
       - name: Install build dependencies
         run: |
@@ -49,9 +45,7 @@ jobs:
             python3 \
             python3-pip \
             uuid-dev
-
-      - name: Install EDK2 Python dependencies
-        run: pip3 install -r edk2/pip-requirements.txt
+          pip3 install -r edk2/pip-requirements.txt
 
       - name: Download LoongArch64 cross-toolchain
         run: |
@@ -65,15 +59,31 @@ jobs:
 
       - name: Prepare EDK2 BaseTools
         run: |
-          git -C edk2 submodule update --init \
-            BaseTools/Source/C/BrotliCompress/brotli \
-            CryptoPkg/Library/MbedTlsLib/mbedtls \
-            CryptoPkg/Library/OpensslLib/openssl \
-            MdeModulePkg/Library/BrotliCustomDecompressLib/brotli \
-            MdeModulePkg/Universal/RegularExpressionDxe/oniguruma \
-            MdePkg/Library/BaseFdtLib/libfdt \
-            MdePkg/Library/MipiSysTLib/mipisyst
           make -C edk2/BaseTools -j"$(nproc)"
+
+      - name: Build loong64 Debian package in container
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/artifacts/deb-loong64"
+          docker run --rm --platform linux/loong64 --privileged \
+            -v "$GITHUB_WORKSPACE:/work" linuxdeepin/deepin:crimson-loong64 \
+            sh -lc '
+              set -e
+              export DEBIAN_FRONTEND=noninteractive
+              apt-get update
+              apt-get install -y \
+                build-essential \
+                debhelper \
+                devscripts \
+                dpkg-dev \
+                fakeroot \
+                gnu-efi \
+                mtools \
+                gettext
+              cp -a /work /tmp/refind-loong64
+              cd /tmp/refind-loong64
+              dpkg-buildpackage -us -uc -b
+              cp -a /tmp/*.deb /tmp/*.changes /tmp/*.buildinfo /work/artifacts/deb-loong64/
+            '
 
       - name: Build rEFInd for LoongArch64 (EDK2)
         run: |
@@ -92,3 +102,10 @@ jobs:
           path: |
             refind/refind_loongarch64.efi
             drivers_loongarch64/*.efi
+
+      - name: Upload loong64 Debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: refind-loong64-deb
+          if-no-files-found: error
+          path: artifacts/deb-loong64/*
