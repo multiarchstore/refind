@@ -67,7 +67,12 @@ jobs:
         run: |
           mkdir -p "$GITHUB_WORKSPACE/artifacts/deb-loong64"
           dpkg-buildpackage -us -uc -b -a loong64
-          artifacts="$(find "$GITHUB_WORKSPACE/.." -maxdepth 1 -type f \( -name "refind_*_loong64.deb" -o -name "refind_*_*.changes" -o -name "refind_*_*.buildinfo" \))"
+          deb_file="$(find "$GITHUB_WORKSPACE/.." -maxdepth 1 -type f -name "refind_*_loong64.deb" | head -n1)"
+          [ -n "$deb_file" ] || { echo "No loong64 Debian package found"; exit 1; }
+          dpkg-deb -c "$deb_file" | grep -q './etc/refind.d/keys/' || { echo "Missing keys directory in deb"; exit 1; }
+          dpkg-deb -c "$deb_file" | grep -q 'usr/share/refind/refind/refind_loongarch64.efi' || { echo "Missing refind_loongarch64.efi in deb"; exit 1; }
+          dpkg-deb -c "$deb_file" | grep -q 'usr/share/refind/refind/drivers_loongarch64/' || { echo "Missing drivers_loongarch64 in deb"; exit 1; }
+          artifacts="$(find "$GITHUB_WORKSPACE/.." -maxdepth 1 -type f \( -name "refind_*_loong64.deb" -o -name "refind_*_loong64.changes" -o -name "refind_*_loong64.buildinfo" \))"
           [ -n "$artifacts" ] || { echo "No Debian artifacts found"; exit 1; }
           cp -a $artifacts "$GITHUB_WORKSPACE/artifacts/deb-loong64/"
 

@@ -1,6 +1,7 @@
 #!/usr/bin/make -f
 
 export DH_VERBOSE := 1
+EDK2BASE ?= $(CURDIR)/edk2
 
 include /usr/share/dpkg/architecture.mk
 ifeq (amd64, $(DEB_HOST_ARCH_CPU))
@@ -36,8 +37,8 @@ override_dh_auto_clean:
 
 override_dh_auto_build:
 ifeq (loong64, $(DEB_HOST_ARCH_CPU))
-	dh_auto_build -- edk2 'ARCH=$(ARCH)' 'EDK2BASE=$(CURDIR)/edk2'
-	dh_auto_build -- fs_edk2 'ARCH=$(ARCH)' 'EDK2BASE=$(CURDIR)/edk2'
+	dh_auto_build -- edk2 'ARCH=$(ARCH)' 'EDK2BASE=$(EDK2BASE)'
+	dh_auto_build -- fs_edk2 'ARCH=$(ARCH)' 'EDK2BASE=$(EDK2BASE)'
 else
 	dh_auto_build -- gnuefi 'ARCH=$(ARCH)'
 	dh_auto_build -- fs_gnuefi 'ARCH=$(ARCH)'
