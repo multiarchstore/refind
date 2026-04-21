@@ -3,12 +3,16 @@ name: LoongArch64 EDK2 Build
 on:
   push:
     branches:
-      - '*master'          # 仅 master 开头的分支触发 push
+      - 'master'
+      - 'master*'
+      - '**/master'        # 匹配如 dev-la64/master 这样的分支
     tags:
       - '*'                # <--- 这里替代了原来的 create: ref_type: tag
   pull_request:
     branches:
-      - '*master'          # 仅针对 master 开头的分支触发 PR 检查
+      - 'master'
+      - 'master*'
+      - '**/master'        # 仅针对 master 及包含 master 的分支触发 PR 检查
   workflow_dispatch:
 
 
@@ -72,7 +76,7 @@ jobs:
                ARCH="$ARCH" \
                EDK2_TARGET="$EDK2_TARGET" \
                EDK2_TOOLCHAIN="$EDK2_TOOLCHAIN" \
-               edk2 fs_edk2
+               all_edk2
 
       - name: Package LoongArch64 zip (official layout style)
         run: |
@@ -98,18 +102,92 @@ jobs:
             cd "$RUNNER_TEMP"
             zip -9r "$zip_path" "$package_root"
           )
-          echo "ZIP_PATH=$zip_path" >> "$GITHUB_ENV"
 
       - name: Upload LoongArch64 zip artifact
         uses: actions/upload-artifact@v4
         with:
           name: refind-loongarch64-binzip
           if-no-files-found: error
-          path: ${{ env.ZIP_PATH }}
+          path: refind-bin-*.zip
 
-      # ▼▼▼ 新增：仅当触发事件为 tag 时，使用 gh CLI 上传到 Release ▼▼▼
-      - name: Upload to Release (tag trigger only)
-        if: startsWith(github.ref, 'refs/tags/')   # 仅 tag 触发时执行
+  build-loongarch64-edk2-deb:
+    runs-on: ubuntu-latest
+    env:
+      EDK2BASE: /work/edk2
+
+    steps:
+      - name: Checkout rEFInd
+        uses: actions/checkout@v4
+
+      - name: Checkout EDK2 stable202602
+        uses: actions/checkout@v4
+        with:
+          repository: tianocore/edk2
+          ref: edk2-stable202602
+          path: edk2
+          submodules: recursive
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Debian package in native loong64 container
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ghcr.io/loong64/debian:trixie
+          options: --cpus=4 --platform linux/loong64 --privileged -v ${{ github.workspace }}:/work
+          run: |
+            set -euo pipefail
+            cd /work
+            export DEBIAN_FRONTEND=noninteractive
+            apt update
+            apt install -y \
+              build-essential \
+              debhelper \
+              fakeroot \
+              git \
+              gettext \
+              iasl \
+              mtools \
+              nasm \
+              python3 \
+              python3-pip \
+              uuid-dev
+            git config --global --add safe.directory /work
+            pip3 install --break-system-packages -r edk2/pip-requirements.txt --extra-index-url https://mirrors.loong64.com/pypi/simple
+            mkdir -p /work/deb-out
+            EDK2BASE=/work/edk2 dpkg-buildpackage -b -us -uc
+            cp -v /refind_*_loong64.deb /work/deb-out/
+
+      - name: Upload LoongArch64 deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: refind-loongarch64-deb
+          if-no-files-found: error
+          path: deb-out/*.deb
+
+  release-loongarch64-assets:
+    runs-on: ubuntu-latest
+    needs:
+      - build-loongarch64-edk2
+      - build-loongarch64-edk2-deb
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download LoongArch64 zip artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: refind-loongarch64-binzip
+          path: release-assets
+
+      - name: Download LoongArch64 deb artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: refind-loongarch64-deb
+          path: release-assets
+
+      - name: Upload to Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -138,7 +216,6 @@ jobs:
           fi
 
           # 上传构建产物到 release
-          gh release upload "$TAG_NAME" "$ZIP_PATH" \
+          gh release upload "$TAG_NAME" release-assets/* \
             --repo "$GITHUB_REPOSITORY" \
             --clobber
-        # ▲▲▲ 结束 ▲▲▲

@@ -35,7 +35,7 @@ override_dh_auto_clean:
 	dh_auto_clean
 	rm -rf drivers_*/
 
-override_dh_auto_build:
+override_dh_auto_build: make_edk2_base
 ifeq (loong64, $(DEB_HOST_ARCH_CPU))
 	test -d '$(EDK2BASE)' || { echo "EDK2BASE not found: $(EDK2BASE)"; exit 1; }
 	dh_auto_build -- edk2 'ARCH=$(ARCH)' 'EDK2BASE=$(EDK2BASE)'
@@ -57,3 +57,11 @@ endif
 
 override_dh_installchangelogs:
 	dh_installchangelogs NEWS.txt
+
+make_edk2_base:
+ifeq (loong64, $(DEB_HOST_ARCH_CPU))
+	test -d '$(EDK2BASE)' || { echo "EDK2BASE not found: $(EDK2BASE)"; exit 1; }
+	make -C $(EDK2BASE)/BaseTools -j$(nproc)
+else
+	@echo "Skipping EDK2 BaseTools build for non-LoongArch64 architecture"
+endif
