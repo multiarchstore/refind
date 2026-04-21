@@ -76,7 +76,8 @@ jobs:
                ARCH="$ARCH" \
                EDK2_TARGET="$EDK2_TARGET" \
                EDK2_TOOLCHAIN="$EDK2_TOOLCHAIN" \
-               all_edk2
+               prefix="loongarch64-unknown-linux-gnu-" \
+               edk2 fs_edk2
 
       - name: Package LoongArch64 zip (official layout style)
         run: |

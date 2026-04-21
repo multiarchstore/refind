@@ -60,14 +60,6 @@ ifeq ($(ARCH),aarch64)
   AR            = $(prefix)aarch64-linux-gnu-ar
   RANLIB        = $(prefix)aarch64-linux-gnu-ranlib
   OBJCOPY       = $(prefix)aarch64-linux-gnu-objcopy
-else ifeq ($(ARCH),loongarch64)
-  LOONGARCH64_CROSS_PREFIX ?= loongarch64-unknown-linux-gnu-
-  CC            = $(LOONGARCH64_CROSS_PREFIX)gcc
-  AS            = $(LOONGARCH64_CROSS_PREFIX)as
-  LD            = $(LOONGARCH64_CROSS_PREFIX)ld
-  AR            = $(LOONGARCH64_CROSS_PREFIX)ar
-  RANLIB        = $(LOONGARCH64_CROSS_PREFIX)ranlib
-  OBJCOPY       = $(LOONGARCH64_CROSS_PREFIX)objcopy
 else
   CC            = $(prefix)gcc
   AS            = $(prefix)as
